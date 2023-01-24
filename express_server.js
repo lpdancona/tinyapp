@@ -58,6 +58,11 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[key] = req.body.longUrl;
   res.redirect("/urls");
 });
+app.post("/login", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
 const generateRandomString = function () {
   let result = "";
   const len = 6;
