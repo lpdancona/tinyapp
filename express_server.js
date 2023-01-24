@@ -52,6 +52,12 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[deleteKey];
   res.redirect("/urls");
 });
+app.post("/urls/:id", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  const key = req.params.id;
+  urlDatabase[key] = req.body.longUrl;
+  res.redirect("/urls");
+});
 const generateRandomString = function () {
   let result = "";
   const len = 6;
