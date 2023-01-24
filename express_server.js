@@ -37,7 +37,14 @@ app.get("/urls/:id", (req, res) => {
 });
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const value = req.body.longURL;
+  const key = generateRandomString();
+  urlDatabase[key] = value;
+  res.redirect(`/urls/${key}`);
+});
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 const generateRandomString = function () {
   let result = "";
@@ -48,4 +55,3 @@ const generateRandomString = function () {
     result += chars[Math.floor(Math.random() * chars.length)];
   return result;
 };
-console.log(generateRandomString());
