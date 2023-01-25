@@ -18,8 +18,8 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if(username){ %>
-    <h1>Welcome <%= username %></h1>
+    <% if(user){ %>
+    <span>Welcome <%= user %></span>
     <form method="POST" action="/logout">
       <button
         style="
@@ -37,24 +37,39 @@
       </button>
     </form>
     <% } else{ %>
-    <form method="POST" action="/login">
-      <label for="login">Login:</label>
-      <input name="username" />
-      <button
+    <a href="/register"
+      ><button
         style="
-          color: white;
-          background-color: blue;
+          color: green;
+          background-color: white;
           border-radius: 10%;
-          border-color: white;
+          border-color: green;
           border-style: solid;
           width: 100px;
           height: 40px;
         "
         type="submit"
       >
-        Submit
-      </button>
-    </form>
+        Register
+      </button></a
+    >
+    <a href="/login"
+      ><button
+        style="
+          color: green;
+          background-color: white;
+          border-radius: 10%;
+          border-color: green;
+          border-style: solid;
+          width: 100px;
+          height: 40px;
+          margin-left: 1cm;
+        "
+        type="submit"
+      >
+        Login
+      </button></a
+    >
     <% } %>
   </nav>
 </header>
