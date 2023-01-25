@@ -18,27 +18,43 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <% if(username){ %>
+    <h1>Welcome <%= username %></h1>
+    <form method="POST" action="/logout">
+      <button
+        style="
+          color: white;
+          background-color: blue;
+          border-radius: 10%;
+          border-color: white;
+          border-style: solid;
+          width: 100px;
+          height: 40px;
+        "
+        type="submit"
+      >
+        Logout
+      </button>
+    </form>
+    <% } else{ %>
+    <form method="POST" action="/login">
+      <label for="login">Login:</label>
+      <input name="username" />
+      <button
+        style="
+          color: white;
+          background-color: blue;
+          border-radius: 10%;
+          border-color: white;
+          border-style: solid;
+          width: 100px;
+          height: 40px;
+        "
+        type="submit"
+      >
+        Submit
+      </button>
+    </form>
+    <% } %>
   </nav>
-  <% if(username){ %>
-  <h1>Welcome <%= username %></h1>
-  <% } else{ %>
-  <form method="POST" action="/login">
-    <label for="login">Login:</label>
-    <input name="username" />
-    <button
-      style="
-        color: white;
-        background-color: blue;
-        border-radius: 10%;
-        border-color: white;
-        border-style: solid;
-        width: 100px;
-        height: 40px;
-      "
-      type="submit"
-    >
-      Submit
-    </button>
-  </form>
-  <% } %>
 </header>
