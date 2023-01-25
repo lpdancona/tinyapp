@@ -22,7 +22,10 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"],
+  };
   res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
@@ -32,6 +35,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
+    username: req.cookies["username"],
   };
   res.render("urls_show", templateVars);
 });
@@ -61,7 +65,12 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  const templateVars = {
+    username: req.body.username,
+    urls: urlDatabase,
+  };
+  console.log(templateVars);
+  res.render("urls_index", templateVars);
 });
 const generateRandomString = function () {
   let result = "";
