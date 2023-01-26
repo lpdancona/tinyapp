@@ -2,6 +2,11 @@ const cookieSession = require("cookie-session");
 const express = require("express");
 const app = express();
 const bcrypt = require("bcryptjs");
+const {
+  getUserByEmail,
+  urlsForUser,
+  generateRandomString,
+} = require("./helpers");
 app.use(
   cookieSession({
     name: "session",
@@ -13,10 +18,6 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
-// const urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -49,7 +50,7 @@ app.get("/urls", (req, res) => {
     );
   }
   console.log(req.session);
-  const userUrls = urlsForUser(id);
+  const userUrls = urlsForUser(id, urlDatabase);
   const templateVars = {
     urls: userUrls,
     user: req.session["user"],
@@ -139,12 +140,11 @@ app.post("/urls/:id", (req, res) => {
 });
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  // console.log(password);
-  // console.log(email);
+
   if (!email || !password) {
     return res.status(400).send("Please provide an email address");
   }
-  const tempUser = findUserEmail(email, users);
+  const tempUser = getUserByEmail(email, users);
   console.log(tempUser);
   if (!tempUser) {
     return res.status(403).send("Please provide a registered email address");
@@ -164,15 +164,6 @@ app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
 });
-const generateRandomString = function () {
-  let result = "";
-  const len = 6;
-  const chars =
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  for (let i = len; i > 0; --i)
-    result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
-};
 app.get("/register", (req, res) => {
   const userId = req.session.user;
   const user = users[userId];
@@ -203,7 +194,7 @@ app.post("/register", (req, res) => {
   if (email === "" || password === "") {
     return res.status(400).send("Please provide an email address");
   }
-  const emailTaken = findUserEmail(email, users);
+  const emailTaken = getUserByEmail(email, users);
   if (emailTaken) {
     return res.status(400).send("Email already taken");
   }
@@ -213,14 +204,6 @@ app.post("/register", (req, res) => {
   console.log(users);
   res.redirect("/urls");
 });
-const findUserEmail = function (email, users) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return null;
-};
 app.get("/login", (req, res) => {
   const templateVars = {
     user: req.session.user,
@@ -231,12 +214,3 @@ app.get("/login", (req, res) => {
     res.render("login", templateVars);
   }
 });
-const urlsForUser = function (id) {
-  let userUrls = {};
-  for (let shortUrl in urlDatabase) {
-    if (urlDatabase[shortUrl].userID === id) {
-      userUrls[shortUrl] = urlDatabase[shortUrl];
-    }
-  }
-  return userUrls;
-};
