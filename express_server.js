@@ -1,6 +1,7 @@
 const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
+const bcrypt = require("bcryptjs");
 app.use(cookieParser());
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -21,7 +22,7 @@ const urlDatabase = {
   },
 };
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("/register");
 });
 
 app.listen(PORT, () => {
@@ -131,11 +132,18 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 app.post("/login", (req, res) => {
-  const tempUser = findUserEmail(req.body.email, users);
+  const { email, password } = req.body;
+  // console.log(password);
+  // console.log(email);
+  if (!email || !password) {
+    return res.status(400).send("Please provide an email address");
+  }
+  const tempUser = findUserEmail(email, users);
+  console.log(tempUser);
   if (!tempUser) {
     return res.status(403).send("Please provide a registered email address");
   }
-  if (req.body.password !== tempUser.password) {
+  if (!bcrypt.compareSync(password, tempUser.password)) {
     return res.status(403).send("Please provide a matching password");
   }
   res.cookie("user", tempUser.id);
@@ -193,7 +201,8 @@ app.post("/register", (req, res) => {
   if (emailTaken) {
     return res.status(400).send("Email already taken");
   }
-  users[id] = { id, email, password };
+  users[id] = { id, email, password: bcrypt.hashSync(password, 10) };
+  console.log(bcrypt.hashSync(password, 10));
   res.cookie("user", id);
   console.log(users);
   res.redirect("/urls");
