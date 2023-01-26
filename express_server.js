@@ -35,7 +35,13 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: req.cookies.user,
   };
-  res.render("urls_new", templateVars);
+  if (templateVars.user) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.send(
+      '<div>Please login first</div><a href="http://localhost:8080/login">Redirect to Login</a>'
+    );
+  }
 });
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
@@ -43,6 +49,9 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id],
     user: req.cookies["user"],
   };
+  if (!templateVars.longURL) {
+    return res.send("this url does not exist");
+  }
   res.render("urls_show", templateVars);
 });
 app.post("/urls", (req, res) => {
@@ -101,7 +110,11 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: req.cookies.user,
   };
-  res.render("urls_register", templateVars);
+  if (templateVars.user) {
+    res.redirect("/urls");
+  } else {
+    res.render("urls_register", templateVars);
+  }
 });
 const users = {
   userRandomID: {
@@ -139,17 +152,13 @@ const findUserEmail = function (email, users) {
   }
   return null;
 };
-// const findEqualEmail = function (email, users) {
-//   for (const user in users) {
-//     if (users[user].email !== email) {
-//       return users[user];
-//     }
-//   }
-//   return null;
-// };
 app.get("/login", (req, res) => {
   const templateVars = {
     user: req.cookies.user,
   };
-  res.render("login", templateVars);
+  if (templateVars.user) {
+    res.redirect("/urls");
+  } else {
+    res.render("login", templateVars);
+  }
 });
