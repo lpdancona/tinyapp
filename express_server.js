@@ -6,12 +6,22 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
+// const urlDatabase = {
+//   b2xVn2: "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com",
+// };
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
@@ -24,9 +34,17 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
+  const id = req.cookies.user;
+  const user = users[id];
+  if (!user) {
+    return res.send(
+      "please login or register first<a href=http://localhost:8080/register>Redirect to registration</a>"
+    );
+  }
   console.log(req.cookies);
+  const userUrls = urlsForUser(id);
   const templateVars = {
-    urls: urlDatabase,
+    urls: userUrls,
     user: req.cookies["user"],
   };
   res.render("urls_index", templateVars);
@@ -44,9 +62,18 @@ app.get("/urls/new", (req, res) => {
   }
 });
 app.get("/urls/:id", (req, res) => {
+  const userId = req.cookies.user;
+  const user = users[userId];
+  if (!user) {
+    return res.send("please login");
+  }
+  const shortUrl = req.params.id;
+  if (urlDatabase[shortUrl].userID !== userId) {
+    return res.send("You do not have permission");
+  }
   const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    id: shortUrl,
+    longURL: urlDatabase[req.params.id].longURL,
     user: req.cookies["user"],
   };
   if (!templateVars.longURL) {
@@ -56,9 +83,13 @@ app.get("/urls/:id", (req, res) => {
 });
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
+  const userId = req.cookies.user;
   const value = req.body.longURL;
   const key = generateRandomString();
-  urlDatabase[key] = value;
+  urlDatabase[key] = {
+    longURL: value,
+    userID: userId,
+  };
   res.redirect(`/urls/${key}`);
 });
 app.get("/u/:id", (req, res) => {
@@ -66,15 +97,37 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 app.post("/urls/:id/delete", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
   const deleteKey = req.params.id;
+  const userId = req.cookies.user;
+  const user = users[userId];
+  if (!user) {
+    return res.send("Please login first");
+  }
+  if (!urlDatabase[deleteKey]) {
+    return res.send("Url does not exist");
+  }
+  if (urlDatabase[deleteKey].userID !== userId) {
+    return res.send("You do not have permission");
+  }
+  console.log(req.body); // Log the POST request body to the console
   delete urlDatabase[deleteKey];
   res.redirect("/urls");
 });
 app.post("/urls/:id", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
   const key = req.params.id;
-  urlDatabase[key] = req.body.longUrl;
+  const userId = req.cookies.user;
+  const user = users[userId];
+  if (!user) {
+    return res.send("Please login first");
+  }
+  if (!urlDatabase[key]) {
+    return res.send("Url does not exist");
+  }
+  if (urlDatabase[key].userID !== userId) {
+    return res.send("You do not have permission");
+  }
+  console.log(req.body); // Log the POST request body to the console
+  urlDatabase[key].longURL = req.body.longUrl;
   res.redirect("/urls");
 });
 app.post("/login", (req, res) => {
@@ -107,14 +160,15 @@ const generateRandomString = function () {
   return result;
 };
 app.get("/register", (req, res) => {
+  const userId = req.cookies.user;
+  const user = users[userId];
+  if (user) {
+    return res.redirect("/urls");
+  }
   const templateVars = {
     user: req.cookies.user,
   };
-  if (templateVars.user) {
-    res.redirect("/urls");
-  } else {
-    res.render("urls_register", templateVars);
-  }
+  res.render("urls_register", templateVars);
 });
 const users = {
   userRandomID: {
@@ -162,3 +216,12 @@ app.get("/login", (req, res) => {
     res.render("login", templateVars);
   }
 });
+const urlsForUser = function (id) {
+  let userUrls = {};
+  for (let shortUrl in urlDatabase) {
+    if (urlDatabase[shortUrl].userID === id) {
+      userUrls[shortUrl] = urlDatabase[shortUrl];
+    }
+  }
+  return userUrls;
+};
