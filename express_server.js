@@ -1,8 +1,14 @@
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const express = require("express");
 const app = express();
 const bcrypt = require("bcryptjs");
-app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["bsvehvfyuger"],
+  })
+);
+
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
@@ -35,24 +41,24 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
-  const id = req.cookies.user;
+  const id = req.session.user;
   const user = users[id];
   if (!user) {
     return res.send(
       "please login or register first<a href=http://localhost:8080/register>Redirect to registration</a>"
     );
   }
-  console.log(req.cookies);
+  console.log(req.session);
   const userUrls = urlsForUser(id);
   const templateVars = {
     urls: userUrls,
-    user: req.cookies["user"],
+    user: req.session["user"],
   };
   res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: req.cookies.user,
+    user: req.session.user,
   };
   if (templateVars.user) {
     res.render("urls_new", templateVars);
@@ -63,7 +69,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 app.get("/urls/:id", (req, res) => {
-  const userId = req.cookies.user;
+  const userId = req.session.user;
   const user = users[userId];
   if (!user) {
     return res.send("please login");
@@ -75,7 +81,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: shortUrl,
     longURL: urlDatabase[req.params.id].longURL,
-    user: req.cookies["user"],
+    user: req.session["user"],
   };
   if (!templateVars.longURL) {
     return res.send("this url does not exist");
@@ -84,7 +90,7 @@ app.get("/urls/:id", (req, res) => {
 });
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  const userId = req.cookies.user;
+  const userId = req.session.user;
   const value = req.body.longURL;
   const key = generateRandomString();
   urlDatabase[key] = {
@@ -99,7 +105,7 @@ app.get("/u/:id", (req, res) => {
 });
 app.post("/urls/:id/delete", (req, res) => {
   const deleteKey = req.params.id;
-  const userId = req.cookies.user;
+  const userId = req.session.user;
   const user = users[userId];
   if (!user) {
     return res.send("Please login first");
@@ -116,7 +122,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 app.post("/urls/:id", (req, res) => {
   const key = req.params.id;
-  const userId = req.cookies.user;
+  const userId = req.session.user;
   const user = users[userId];
   if (!user) {
     return res.send("Please login first");
@@ -146,7 +152,7 @@ app.post("/login", (req, res) => {
   if (!bcrypt.compareSync(password, tempUser.password)) {
     return res.status(403).send("Please provide a matching password");
   }
-  res.cookie("user", tempUser.id);
+  req.session.user = tempUser.id;
   const templateVars = {
     user: tempUser.id,
     urls: urlDatabase,
@@ -155,7 +161,7 @@ app.post("/login", (req, res) => {
   res.render("urls_index", templateVars);
 });
 app.post("/logout", (req, res) => {
-  res.clearCookie("user");
+  req.session = null;
   res.redirect("/login");
 });
 const generateRandomString = function () {
@@ -168,13 +174,13 @@ const generateRandomString = function () {
   return result;
 };
 app.get("/register", (req, res) => {
-  const userId = req.cookies.user;
+  const userId = req.session.user;
   const user = users[userId];
   if (user) {
     return res.redirect("/urls");
   }
   const templateVars = {
-    user: req.cookies.user,
+    user: req.session.user,
   };
   res.render("urls_register", templateVars);
 });
@@ -203,7 +209,7 @@ app.post("/register", (req, res) => {
   }
   users[id] = { id, email, password: bcrypt.hashSync(password, 10) };
   console.log(bcrypt.hashSync(password, 10));
-  res.cookie("user", id);
+  req.session.user = id;
   console.log(users);
   res.redirect("/urls");
 });
@@ -217,7 +223,7 @@ const findUserEmail = function (email, users) {
 };
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: req.cookies.user,
+    user: req.session.user,
   };
   if (templateVars.user) {
     res.redirect("/urls");
