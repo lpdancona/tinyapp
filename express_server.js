@@ -90,7 +90,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+  console.log(req.body);
   const userId = req.session.user;
   const value = req.body.longURL;
   const key = generateRandomString();
@@ -101,7 +101,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${key}`);
 });
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
 });
 app.post("/urls/:id/delete", (req, res) => {
@@ -117,7 +117,7 @@ app.post("/urls/:id/delete", (req, res) => {
   if (urlDatabase[deleteKey].userID !== userId) {
     return res.send("You do not have permission");
   }
-  console.log(req.body); // Log the POST request body to the console
+  console.log(req.body);
   delete urlDatabase[deleteKey];
   res.redirect("/urls");
 });
@@ -134,7 +134,7 @@ app.post("/urls/:id", (req, res) => {
   if (urlDatabase[key].userID !== userId) {
     return res.send("You do not have permission");
   }
-  console.log(req.body); // Log the POST request body to the console
+  console.log(req.body);
   urlDatabase[key].longURL = req.body.longUrl;
   res.redirect("/urls");
 });
