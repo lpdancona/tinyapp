@@ -4,8 +4,8 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["navigate through your urls in the url page"](#)
-!["create as many urls as you want"](#)
+!["navigate through your urls in the url page"](https://github.com/lpdancona/tinyapp/blob/main/docs/urls-page.png?raw=true)
+!["create as many urls as you want"](https://github.com/lpdancona/tinyapp/blob/main/docs/urls-create.png?raw=true)
 
 ## Dependencies
 
