@@ -19,7 +19,7 @@
       </div>
     </div>
     <% if(user){ %>
-    <span>Welcome <%= user %></span>
+    <span>Welcome <%= user.email %></span>
     <form method="POST" action="/logout">
       <button
         style="
